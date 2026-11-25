@@ -26,6 +26,13 @@ def main():
         raise ValueError(f"Wi-Fi name is {len(name)} characters, must be 1-32")
     if not name.strip():
         raise ValueError("Wi-Fi name must not be only white space")
+    # A Wi-Fi name (SSID) is bytes on the wire: keep it within 32 bytes too,
+    # so the gate's character count and the leaderboard's byte tie-break agree.
+    encoded = name.encode("utf-8")
+    if len(encoded) > 32:
+        raise ValueError(f"Wi-Fi name is {len(encoded)} bytes, must be at most 32")
+    if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in name):
+        raise ValueError("Wi-Fi name must not contain control characters")
     outdir = "/output"
     os.makedirs(outdir, exist_ok=True)
     path = os.path.join(outdir, "entry.txt")
